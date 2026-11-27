@@ -1,0 +1,118 @@
+
+#include <ESP8266WiFi.h>
+
+const char * ssid = "Lava";
+const char *password = "";
+
+WiFiClient client;
+WiFiServer server(80);//HTTP protocol
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid,password);
+  pinMode(D4,OUTPUT);
+
+  while(WiFi.status() != WL_CONNECTED){
+    Serial.println("Obtaining IP Address !");
+    delay(500);
+  }
+
+  Serial.println();
+  Serial.println("NodeMCU is Connected !");
+  Serial.print("IP Address : ");
+  Serial.println(WiFi.localIP());
+
+  server.begin();  // Start the server
+  // put your setup code here, to run once:
+
+}
+
+void loop() {
+  client = server.available(); // Check if a client is connected
+  
+
+  if(client){
+    String request = client.readStringUntil('\n');
+    request.trim(); // Remove Extra Spaces 
+    Serial.println(request);
+
+    if(request == "GET /ON HTTP/1.1"){
+      digitalWrite(D4,LOW);
+    }
+
+        if(request == "GET /OFF HTTP/1.1"){
+      digitalWrite(D4,HIGH);
+    }
+   
+ client.println("<!DOCTYPE html>");
+client.println("<html>");
+
+client.println("<head>");
+client.println("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+client.println("<title>ESP8266 Control</title>");
+
+client.println("<style>");
+
+client.println("body{");
+client.println("margin:0;");
+client.println("padding:0;");
+client.println("font-family:Arial, Helvetica, sans-serif;");
+client.println("background-color:#f2f2f2;");
+client.println("text-align:center;");
+client.println("}");
+
+client.println("h1{");
+client.println("background-color:#0078D7;");
+client.println("color:white;");
+client.println("padding:20px;");
+client.println("margin:0;");
+client.println("}");
+
+client.println(".container{");
+client.println("margin-top:100px;");
+client.println("}");
+
+client.println("button{");
+client.println("width:150px;");
+client.println("height:60px;");
+client.println("font-size:22px;");
+client.println("border:none;");
+client.println("border-radius:10px;");
+client.println("margin:15px;");
+client.println("cursor:pointer;");
+client.println("color:white;");
+client.println("}");
+
+client.println(".on{");
+client.println("background-color:green;");
+client.println("}");
+
+client.println(".off{");
+client.println("background-color:red;");
+client.println("}");
+
+client.println("button:hover{");
+client.println("opacity:0.8;");
+client.println("}");
+
+client.println("</style>");
+client.println("</head>");
+
+client.println("<body>");
+
+client.println("<h1>ESP8266</h1>");
+
+client.println("<div class=\"container\">");
+
+client.println("<button class=\"on\" onclick=\"location.href='/ON'\">ON</button>");
+
+client.println("<button class=\"off\" onclick=\"location.href='/OFF'\">OFF</button>");
+
+client.println("</div>");
+
+client.println("</body>");
+client.println("</html>");
+
+ client.println("HTTP/1.1 200 OK");
+  }
+
+}
